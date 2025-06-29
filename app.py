@@ -11,13 +11,6 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🎰 宝くじ予想AI")
-st.markdown("過去データを分析して次回の当選番号を予想します")
-
-# 初回アクセス用の説明を追加
-if 'loto6' in analyzer.data:
-    st.info("💡 **クイックスタート**: 各タブの「🎲 サンプルデータを使用」ボタンでデモをお試しください！")
-
 @st.cache_data
 def load_analyzer():
     analyzer = LotteryAnalyzer()
@@ -32,6 +25,13 @@ def load_analyzer():
     return analyzer
 
 analyzer = load_analyzer()
+
+st.title("🎰 宝くじ予想AI")
+st.markdown("過去データを分析して次回の当選番号を予想します")
+
+# 初回アクセス用の説明を追加
+if 'loto6' in analyzer.data:
+    st.info("💡 **クイックスタート**: 各タブの「🎲 サンプルデータを使用」ボタンでデモをお試しください！")
 
 def upload_and_process_csv(lottery_type, expected_columns):
     st.subheader(f"{lottery_type} データ設定")
