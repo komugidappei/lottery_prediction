@@ -14,16 +14,45 @@ st.set_page_config(
 st.title("🎰 宝くじ予想AI")
 st.markdown("過去データを分析して次回の当選番号を予想します")
 
+# 初回アクセス用の説明を追加
+if 'loto6' in analyzer.data:
+    st.info("💡 **クイックスタート**: 各タブの「🎲 サンプルデータを使用」ボタンでデモをお試しください！")
+
 @st.cache_data
 def load_analyzer():
-    return LotteryAnalyzer()
+    analyzer = LotteryAnalyzer()
+    # デフォルトでサンプルデータを読み込み
+    try:
+        analyzer.load_data('loto6', 'data/loto6_large_sample.csv')
+        analyzer.load_data('loto7', 'data/loto7_large_sample.csv')
+        analyzer.load_data('numbers3', 'data/numbers3_large_sample.csv')
+        analyzer.load_data('numbers4', 'data/numbers4_large_sample.csv')
+    except FileNotFoundError:
+        pass  # ファイルがない場合はスキップ
+    return analyzer
 
 analyzer = load_analyzer()
 
 def upload_and_process_csv(lottery_type, expected_columns):
-    st.subheader(f"{lottery_type} データアップロード")
+    st.subheader(f"{lottery_type} データ設定")
+    
+    # デフォルトデータが読み込まれているかチェック
+    has_default_data = lottery_type in analyzer.data
+    
+    if has_default_data:
+        data_count = len(analyzer.data[lottery_type])
+        st.success(f"✅ サンプルデータ読み込み済み ({data_count}回分)")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button(f"🎲 {lottery_type}サンプルデータを使用", key=f"{lottery_type}_use_sample"):
+                return True
+        
+        with col2:
+            st.markdown("**または独自データをアップロード ↓**")
+    
     uploaded_file = st.file_uploader(
-        f"{lottery_type}のCSVファイルをアップロード",
+        f"{lottery_type}のCSVファイルをアップロード（独自データ）",
         type=['csv'],
         key=f"{lottery_type}_upload"
     )
@@ -210,12 +239,24 @@ def main():
                     st.metric("最新抽選日", str(data_info['date'].max())[:10])
 
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### 📋 使用方法")
+    st.sidebar.markdown("### 🎯 クイックスタート")
     st.sidebar.markdown("""
-    1. 各タブで対応するCSVファイルをアップロード
-    2. 分析対象回数を調整
+    **📊 すぐに試す場合:**
+    1. 各タブの「🎲 サンプルデータを使用」ボタンをクリック
+    2. 分析対象回数を調整（50-100回推奨）
     3. 「予想実行」ボタンをクリック
-    4. 予想結果と根拠を確認
+    
+    **📁 独自データを使う場合:**
+    1. CSVファイルをアップロード
+    2. 予想実行
+    """)
+    
+    st.sidebar.markdown("### 📊 搭載データ")
+    st.sidebar.markdown("""
+    - **ロト6**: 500回分のサンプル
+    - **ロト7**: 400回分のサンプル
+    - **ナンバーズ3**: 600回分のサンプル
+    - **ナンバーズ4**: 600回分のサンプル
     """)
     
     st.sidebar.markdown("### ⚠️ 注意事項")
